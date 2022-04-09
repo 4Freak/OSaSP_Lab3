@@ -62,7 +62,6 @@ void GetTime(char* Caller){
 	if (gettimeofday(&TV, NULL) == -1)
 		perror("Can not get current time\n");
 	else {
-	
 		int MSec = TV.tv_usec / 1000;
 		int Sec = TV.tv_sec % 60;
 		int Min = (TV.tv_sec / 60) % 60;
