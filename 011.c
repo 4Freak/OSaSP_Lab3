@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
+int ProcessChild(pid_t ChildPid);
 void GetTime(char* Caller);
 int WaitChild(pid_t ChildPid);
 
@@ -11,49 +12,44 @@ int main()
 {
   pid_t ChildPid1 = 0;
   ChildPid1 = fork();
-  switch (ChildPid1){
+  if (ProcessChild(ChildPid1) > 0){
+    pid_t ChildPid2 = 0;
+    ChildPid2 = fork();
+    int iResult = ProcessChild(ChildPid2);
+    if (iResult == -1){
+      if (WaitChild(ChildPid1) == 1){
+        return 2;
+      }
+    }else if (iResult > 0){
+      GetTime("Parent");
+      if (system("ps -x") == -1){
+        perror("Cannot show information about active processes\n");
+      }
+      if (WaitChild(ChildPid1) == 1){
+        return 3;
+      }
+      if (WaitChild(ChildPid2) == 1){
+        return 4;
+      }
+    }
+  }
+  return 0;
+}
+
+int ProcessChild(pid_t ChildPid)
+{
+  switch (ChildPid){
     case -1:
 			perror("Child 1 process could not be created\n");
-      return 1;
+      return -1;
 			break;
 
     case 0:
       GetTime("Child 1");
+      return 0;
       break;
-
-    default:
-      pid_t ChildPid2 = 0;
-      ChildPid2 = fork();
-      switch(ChildPid2){
-        case -1:
-          perror("Child 1 process could not be created\n");
-          if (WaitChild(ChildPid1) == 1){
-            return 1;
-          }
-          return 2;
-          break;
-
-        case 0:
-          GetTime("Child 2");
-          break;
-
-        default:
-          GetTime("Parent");
-          if (system("ps -x") == -1){
-            perror("Cannot show information about active processes\n");
-          }
-          if (WaitChild(ChildPid1) == 1){
-            return 3;
-          }
-          if (WaitChild(ChildPid2) == 1){
-            return 4;
-          }
-
-          break;
-      }    
-    break;
   }
-  return 0;
+  return 1;
 }
 
 void GetTime(char* Caller){
