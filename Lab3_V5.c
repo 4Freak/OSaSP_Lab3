@@ -65,7 +65,6 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-// Ad if O_APPEND | O_TRUNC
 int RedirectHandler(const char *FileName, int Handle, int AddMode)
 {
   int Fd = open(FileName, RHFileFlags | AddMode, RHFileMode);
